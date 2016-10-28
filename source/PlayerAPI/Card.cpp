@@ -1,89 +1,83 @@
 /*
- * Card Class
- *
- * -David Browning, Ligia Frangello & Katie Sweet
- *
- * The purpose of this file is to allow others to build a card object.
- * Cards contain a suit and a value.
- * Suit is an enum {HEARTS}
- *
- * The constuctor accepts the suit enum and one integer.
- *
- * The suit enum (HEARTS, SPADES, CLUBS, DIAMONDS, UNDEFINED) determines the
- * suit. The reason for the UNDEFINED suit type is that in the Player Class,
- * there is a function called requestMove() that returns a vector of Cards.
- * In the game Crazy Eight's, a move can consist of drawing a card from the
- * deck. We need an UNDEFINED type to alertnthe Crazy Eight's game logic that
- * they chose the draw pile instead of playing a card.
- *
- * The integer (1-13) determines the value. Value is on a 1 based index for
- * easier scoring.
- *
- */
+* This file includes the function definitions for the card class.
+*
+* Above each function is a short description of what each function does. If
+* there are any questions, please do not hesitate to contact Katie Sweet or
+* Ligia Frangello.
+*
+* -Ligia Frangello, Katie Sweet
+*/
 
+#include "Card.hpp"
 #include <algorithm>
 #include <iostream>
 #include <iterator>
 #include <random>
-#include <vector>
 
-enum Suit
+// Constructor for a UNDEFINED card. Needed for if the client chooses to draw
+// from the deck in Crazy Eight's.
+Card::Card(Suit su) : suit(su), value(0)
 {
-  HEARTS,
-  SPADES,
-  CLUBS,
-  DIAMONDS,
-  UNDEFINED
-};
+  if (suit != UNDEFINED)
+  {
+    std::string error = "Error. Cannot instantiate a card without a value.";
+    throw std::invalid_argument(error);
+  }
+}
 
-class Card
+// Constructor for a card in a standard 52 card deck.
+// Values are from 2 to 14 corrosponding from 2 - Ace.
+Card::Card(Suit su, int val) : suit(su), value(val)
 {
-private:
-  Suit suit;
-  unsigned int value;
-
-public:
-  ~Card() {}
-  Card(Suit su)
+  if (val < 2 || val > 14)
   {
-    suit = su;
-    if (su == UNDEFINED)
-    {
-      value = 0;
-    }
-    else
-    {
-      std::cout << "Error. Cannot instantiate a card without a value."
-                << std::endl;
-      throw(2);
-    }
+    std::string error = "Error: Tried to instantiate a card of undefined value";
+    throw std::invalid_argument(error);
   }
-  Card(Suit su, int val)
+}
+
+// Returns the suit of a card.
+Suit Card::getSuit() const
+{
+  return suit;
+}
+
+// Returns a value of a card.
+unsigned int Card::getValue() const
+{
+  return value;
+}
+
+// Allows for the '<' comparison of two Card objects.
+// Will potentially be used to sort the hand.
+bool operator<(const Card& a, const Card& b)
+{
+  if (a.getSuit() < b.getSuit())
   {
-    // Assign suit
-    suit = su;
-
-    // Assign Value
-    if (su == UNDEFINED)
-    {
-      value = -1; // a card of type UNDEFINED will take any value.
-    }
-    else if (val < 1 || val > 13)
-    {
-      // Values are from 1 to 13 corrosponding from Ace - King.
-      std::cout << "Error: Tried to instantiate a card of undefined value"
-                << std::endl;
-      throw(2);
-    }
-    else
-    {
-      value = val;
-    }
+    return true;
   }
-  Suit getSuit() const { return suit; }
-  int getValue() const { return value; }
-};
+  else if (a.getSuit() > b.getSuit())
+  {
+    return false;
+  }
+  else
+    return a.getValue() < b.getValue();
+}
 
+// Allows for the '==' comparison of two Card objects.
+bool operator==(const Card& a, const Card& b)
+{
+  if (a.getSuit() == b.getSuit() && a.getValue() == b.getValue())
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+// Function used to deal out a random deck of 52 cards
 std::vector<Card> initializeDeck()
 {
   std::vector<Card> deck;
@@ -91,7 +85,7 @@ std::vector<Card> initializeDeck()
   std::vector<Suit> suits = {HEARTS, SPADES, CLUBS, DIAMONDS};
   for (auto&& suit : suits)
   {
-    for (int i = 1; i < 14; i++)
+    for (int i = 2; i < 15; i++)
     {
       deck.push_back(Card(suit, i));
     }
